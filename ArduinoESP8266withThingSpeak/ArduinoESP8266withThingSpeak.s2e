@@ -1,0 +1,89 @@
+{
+	"extensionName": "ArduinoESP8266withThingSpeak",
+	"description": "IoT block utilizing ThingSpeak for Arduino ESP8266",
+	"version": "1.0",
+	"author": "BetaMan-KangMinsoo(skymin0417@gmail.com)",
+	"homepage": "https://github.com/skymins04",
+	"sort":0,
+	"javascriptURL":"js/ArduinoESP8266withThingSpeak.js",
+  "firmware":"1.0",
+  "extensionPort":0,
+	"blockSpecs": [
+		[
+			"w",
+			"create ESP8266, RX %d.digital, TX %d.digital",
+			"createESP8266",
+			"2",
+			"3",
+			{
+				"setup":"esp.begin(9600);\n",
+				"inc":"",
+				"def":"SoftwareSerial esp({0},{1});\n",
+				"work":"",
+				"loop":""
+			}
+		],
+		[
+			"w",
+			"initial setting ESP8266, SSID %s, PSWD %s",
+			"initESP8266",
+			" ",
+			" ",
+			{
+				"setup":"",
+				"inc":"",
+				"def":"String sendData(String command, const int timeout, boolean debug){ String response = \"\"; esp.print(command); long int time=millis(); while((time+timeout)>millis()){ while(esp.available()){ char c=esp.read(); response+=c; } } if(debug){ Serial.print(response); } return response; }\nString _SSID = {0};\nString _PSWD = {1};\n",
+				"work":"sendData(\"AT+RST\\r\\n\",2000,true);\nsendData(\"AT+CWMODE=1\\r\\n\",1000,true);\nsendData(\"AT+CWJAP=\\\"\"+_SSID+\"\\\",\\\"\"+_PSWD+\"\\\"\",5000,true);\n",
+				"loop":""
+			}
+		],
+		[
+			"w",
+			"set ThingSpeak write API key, %s",
+			"setWriteAPIkey",
+			" ",
+			{
+				"setup":"",
+				"inc":"",
+				"def":"String apiKey = {0};\n",
+				"work":"",
+				"loop":""
+			}
+		],
+		[
+			"w",
+			"send Data to Channel, f1 %n , f2 %n , f3 %n , f4 %n , f5 %n , f6 %n , f7 %n , f8 %n",
+			"sendDataToChannel",
+			"null",
+			"null",
+			"null",
+			"null",
+			"null",
+			"null",
+			"null",
+			"null",
+			{
+				"setup":"",
+				"inc":"",
+				"def":"String getURL() {String getStr;getStr = \"GET /update?api_key=\";getStr += apiKey;if({0}!=20180303) {getStr +=\"&field1=\"; getStr += String({0});}if({1}!=20180303) {getStr +=\"&field2=\"; getStr += String({1});}if({2}!=20180303) {getStr +=\"&field3=\"; getStr += String({2});}if({3}!=20180303) {getStr +=\"&field4=\"; getStr += String({3});}if({4}!=20180303) {getStr +=\"&field5=\"; getStr += String({4});}if({5}!=20180303) {getStr +=\"&field6=\"; getStr += String({5});}if({6}!=20180303) {getStr +=\"&field7=\"; getStr += String({6});}if({7}!=20180303) {getStr +=\"&field8=\"; getStr += String({7});}getStr += \"\\r\\n\\r\\n\";return getStr;}\nString len = getURL();\nvoid sendDataToChannel(){esp.println(\"AT+CIPSTART=\\\"TCP\\\",\\\"184.106.153.149\\\",80\");if(esp.find(\"Error\")){Serial.println(\"AT+CIPSTART error\");return;}esp.println(\"AT+CIPSEND=\"+String(len.length()));if(esp.find(\">\")) esp.print(getURL()); else esp.println(\"AT+CIPCLOSE\");}\n",
+				"work":"sendDataToChannel();\n",
+				"loop":""
+			}
+		]
+	],
+	"menus": {
+		"digital":[0,1,2,3,4,5,6,7,8,9,10,11,12,13]
+	},
+	"values":{
+		"null": 20180303
+	},
+	"translators":{
+		"zh_CN":{
+			"Demo Program":"演示程序",
+			"HIGH":"高电平",
+			"LOW":"低电平",
+			"digitalWrite( %n , %d.digital )":"数字口输出( %n ,%d.digital )",
+      "blink":"闪烁"
+		}
+	}
+}
